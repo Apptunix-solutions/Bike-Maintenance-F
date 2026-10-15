@@ -116,6 +116,30 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(() => {
+              try {
+                const root = document.documentElement;
+                const theme = localStorage.getItem("bikefix.theme");
+                const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                const dark = theme === "dark" || (theme !== "light" && prefersDark);
+                root.classList.toggle("dark", dark);
+                root.dataset.theme = dark ? "dark" : "light";
+                root.style.colorScheme = dark ? "dark" : "light";
+
+                const lang = localStorage.getItem("bikefix.lang");
+                if (lang === "ar" || lang === "en") {
+                  root.lang = lang;
+                  root.dir = lang === "ar" ? "rtl" : "ltr";
+                  root.dataset.direction = root.dir;
+                }
+              } catch {
+                // Storage can be unavailable in privacy-restricted browsers.
+              }
+            })();`,
+          }}
+        />
         <HeadContent />
       </head>
       <body>
