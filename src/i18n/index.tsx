@@ -316,8 +316,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const dir = lang === "ar" ? "rtl" : "ltr";
-    document.documentElement.lang = lang;
-    document.documentElement.dir = dir;
+    const root = document.documentElement;
+    root.lang = lang;
+    root.dir = dir;
+    root.dataset.direction = dir;
   }, [lang]);
 
   const setLang = useCallback((l: Lang) => {

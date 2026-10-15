@@ -140,8 +140,27 @@
 
 /* ===== Niche scrollbar — BikeFix race-orange & lime ===== */
 html {
+  color-scheme: light;
   scrollbar-width: thin;
   scrollbar-color: var(--primary) var(--surface-muted);
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Keep native controls aligned with the active language without reversing values. */
+html[dir="rtl"] body {
+  direction: rtl;
+}
+
+html[dir="ltr"] body {
+  direction: ltr;
+}
+
+input:not([type="email"]):not([type="tel"]):not([type="number"]),
+textarea {
+  text-align: start;
 }
 
 ::-webkit-scrollbar {
