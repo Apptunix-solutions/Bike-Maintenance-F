@@ -2,6 +2,12 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 
 type ThemeMode = "light" | "dark" | "system";
 
+const THEME_STORAGE_KEY = "bikefix.theme";
+
+function isThemeMode(value: string | null): value is ThemeMode {
+  return value === "light" || value === "dark" || value === "system";
+}
+
 interface ThemeValue {
   mode: ThemeMode;
   setMode: (m: ThemeMode) => void;
@@ -13,17 +19,30 @@ function apply(mode: ThemeMode) {
   const prefersDark =
     typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
   const dark = mode === "dark" || (mode === "system" && prefersDark);
-  document.documentElement.classList.toggle("dark", dark);
+  const root = document.documentElement;
+
+  root.classList.toggle("dark", dark);
+  root.dataset.theme = dark ? "dark" : "light";
+  root.style.colorScheme = dark ? "dark" : "light";
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<ThemeMode>("light");
 
   useEffect(() => {
-    const stored = localStorage.getItem("bikefix.theme") as ThemeMode | null;
-    const initial = stored ?? "system";
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    const initial: ThemeMode = isThemeMode(stored) ? stored : "system";
+
     setModeState(initial);
     apply(initial);
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleSystemThemeChange = () => {
+      if (initial === "system") apply("system");
+    };
+    mediaQuery.addEventListener("change", handleSystemThemeChange);
+
+    return () => mediaQuery.removeEventListener("change", handleSystemThemeChange);
   }, []);
 
   const value = useMemo<ThemeValue>(
@@ -31,7 +50,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       mode,
       setMode: (m) => {
         setModeState(m);
-        localStorage.setItem("bikefix.theme", m);
+        localStorage.setItem(THEME_STORAGE_KEY, m);
         apply(m);
       },
     }),
@@ -49,7 +68,7 @@ export function useTheme(): ThemeValue {
     mode: "system",
     setMode: (m) => {
       if (typeof window === "undefined") return;
-      localStorage.setItem("bikefix.theme", m);
+      localStorage.setItem(THEME_STORAGE_KEY, m);
       apply(m);
     },
   };
